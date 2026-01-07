@@ -7,7 +7,6 @@
     { self, nixpkgs }:
     let
       sources = builtins.fromJSON (builtins.readFile ./sources.json);
-      
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -16,7 +15,6 @@
       ];
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
-
 
       rustfsSrc =
         system:
@@ -53,7 +51,11 @@
             installPhase = ''
               mkdir -p $out/bin
               unzip $src
-              install -m755 rustfs* $out/bin/rustfs
+              if [ ! -f rustfs ]; then
+                echo "Error: rustfs binary not found in the archive."
+                exit 1
+              fi
+              install -m755 rustfs $out/bin/rustfs
             '';
           };
         }
