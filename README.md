@@ -87,4 +87,4 @@ The log directory.
 
 ### services.rustfs.tlsDirectory
 
-The tls directory.
+The TLS directory.
