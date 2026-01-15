@@ -37,10 +37,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           REPO="rustfs/rustfs"
-          LATEST_RELEASE=$(gh api repos/$REPO/releases/latest 2>/dev/null || gh api repos/$REPO/releases --jq 'first')
-          VERSION=$(echo "$LATEST_RELEASE" | jq -r '. tag_name')
-          CURRENT_VERSION=$(jq -r '. version' sources.json)
-          
+
+          # Fetch the latest release (including prereleases)
+          LATEST_RELEASE=$(gh api repos/$REPO/releases --jq 'first')
+          VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name')
+          CURRENT_VERSION=$(jq -r '.version' sources.json)
+
           if [ "$VERSION" == "$CURRENT_VERSION" ]; then
             echo "Already up to date ($VERSION)"
             echo "updated=false" >> $GITHUB_OUTPUT
@@ -50,12 +52,12 @@ jobs:
           echo "Updating to $VERSION..."
 
           # Temporary file for new sources
-          cat <<EOF > sources.json.new
+          cat <<EOF > sources.json. new
           {
             "version": "$VERSION",
             "downloadBase": "https://github.com/$REPO/releases/download",
             "files": {
-              "x86_64-linux": { "name": "rustfs-linux-x86_64-musl-latest.zip" },
+              "x86_64-linux":  { "name": "rustfs-linux-x86_64-musl-latest.zip" },
               "aarch64-linux": { "name": "rustfs-linux-aarch64-musl-latest.zip" },
               "x86_64-darwin": { "name": "rustfs-macos-x86_64-latest.zip" },
               "aarch64-darwin": { "name": "rustfs-macos-aarch64-latest.zip" }
@@ -65,11 +67,11 @@ jobs:
 
           # Calculate SHA256 for each file
           for system in "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"; do
-            FILE_NAME=$(jq -r ".files[\"$system\"].name" sources.json.new)
+            FILE_NAME=$(jq -r ". files[\"$system\"]. name" sources.json. new)
             URL="https://github.com/$REPO/releases/download/$VERSION/$FILE_NAME"
             echo "Fetching hash for $URL..."
             HASH=$(nix-prefetch-url --type sha256 "$URL")
-            jq ".files[\"$system\"].sha256 = \"$HASH\"" sources.json.new > sources.json.tmp && mv sources.json.tmp sources.json.new
+            jq ". files[\"$system\"].sha256 = \"$HASH\"" sources.json.new > sources.json.tmp && mv sources.json. tmp sources.json. new
           done
 
           mv sources.json.new sources.json
