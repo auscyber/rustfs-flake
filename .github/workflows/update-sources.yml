@@ -67,7 +67,7 @@ jobs:
 
           # Calculate SHA256 for each file
           for system in "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"; do
-            FILE_NAME=$(jq -r ". files[\"$system\"]. name" sources.json.new)
+            FILE_NAME=$(jq -r ". files[\"$system\"].name" sources.json.new)
             URL="https://github.com/$REPO/releases/download/$VERSION/$FILE_NAME"
             echo "Fetching hash for $URL..."
             HASH=$(nix-prefetch-url --type sha256 "$URL")
