@@ -37,10 +37,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           REPO="rustfs/rustfs"
-          LATEST_RELEASE=$(gh api repos/$REPO/releases/latest)
-          VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name')
-          CURRENT_VERSION=$(jq -r '.version' sources.json)
-
+          LATEST_RELEASE=$(gh api repos/$REPO/releases/latest 2>/dev/null || gh api repos/$REPO/releases --jq 'first')
+          VERSION=$(echo "$LATEST_RELEASE" | jq -r '. tag_name')
+          CURRENT_VERSION=$(jq -r '. version' sources.json)
+          
           if [ "$VERSION" == "$CURRENT_VERSION" ]; then
             echo "Already up to date ($VERSION)"
             echo "updated=false" >> $GITHUB_OUTPUT
